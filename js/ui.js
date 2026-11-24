@@ -34,6 +34,9 @@ export function countdown(s) {
   return 'ya pasó';
 }
 
+// Las listas ya no piden título; este es el valor interno que se guarda.
+export const DEFAULT_TITLE = 'Lista de Navidad';
+
 export const plural = (n, one, many) => `${n} ${n === 1 ? one : many}`;
 
 const MESSAGES = {

@@ -10,6 +10,7 @@
   --danger: #9b2c1f;
   --veil: 246 241 231;
   --veil-strength: 0.74;
+  --festive: "Mountains of Christmas", "Fraunces", Georgia, serif;
   --serif: "Fraunces", Georgia, "Times New Roman", serif;
   --sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -116,7 +117,44 @@ h2 {
   margin: 0 0 0.75rem;
 }
 h1 {
-  font-size: clamp(2.2rem, 6vw, 3.4rem);
+  font-family: var(--festive);
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.02;
+  color: var(--green);
+  font-size: clamp(2.6rem, 8vw, 4.2rem);
+}
+
+/* Inicio: título y foto ------------------------------------------------- */
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 12.5rem;
+  gap: 2rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.hero .lede {
+  margin-bottom: 0;
+}
+.hero__photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 6px solid #fff;
+  box-shadow: 0 6px 18px rgb(0 0 0 / 0.25);
+  transform: rotate(2.5deg);
+}
+
+/* Nieve del puntero (solo escritorio) ------------------------------------ */
+
+.snow {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 100;
 }
 h2 {
   font-size: 1.5rem;
@@ -385,15 +423,6 @@ h2 {
   font-size: 0.82rem;
   color: var(--muted);
 }
-.prio {
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 600;
-  font-size: 0.74rem;
-}
-.prio--high {
-  color: var(--green);
-}
 .gift__link {
   font-weight: 500;
 }
@@ -556,6 +585,14 @@ textarea::placeholder {
 @media (max-width: 34rem) {
   main {
     padding-top: 1.75rem;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+  .hero__photo {
+    max-width: 11rem;
+    margin-left: 0.5rem;
   }
   .row {
     flex-direction: column;

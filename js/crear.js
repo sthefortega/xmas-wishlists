@@ -1,6 +1,6 @@
 import { fetchList, rpc, isUuid } from './api.js';
 import { saveToken, resolveEditToken, getCreatePw, setCreatePw, clearCreatePw } from './auth.js';
-import { h, errorMessage, errorText, copyText, pageUrl, toast } from './ui.js';
+import { h, errorMessage, errorText, copyText, pageUrl, toast, DEFAULT_TITLE } from './ui.js';
 import { mountLayout } from './layout.js';
 
 mountLayout();
@@ -8,12 +8,6 @@ mountLayout();
 const main = document.getElementById('main');
 const params = new URLSearchParams(location.search);
 const listId = params.get('id');
-
-const PRIORITIES = [
-  [1, 'Me haría mucha ilusión'],
-  [2, 'Me gustaría'],
-  [3, 'Si se puede'],
-];
 
 let uid = 0;
 function field(label, input, extra = '') {
@@ -72,7 +66,6 @@ function renderGate() {
 // --- Paso 2: formulario ----------------------------------------------------
 
 function giftRow(g = {}) {
-  const prio = h('select', { name: 'priority' }, PRIORITIES.map(([v, label]) => h('option', { value: v, selected: Number(g.priority || 2) === v }, label)));
   const row = h(
     'div',
     { class: 'gift gift--edit' },
@@ -84,7 +77,6 @@ function giftRow(g = {}) {
       field('Enlace (opcional)', h('input', { name: 'url', maxlength: 500, value: g.url || '', placeholder: 'tienda.com/producto', inputmode: 'url', autocapitalize: 'off' })),
       field('Precio aproximado (opcional)', h('input', { name: 'price', maxlength: 30, value: g.price || '', placeholder: '$500' })),
       field('Nota (opcional)', h('input', { name: 'note', maxlength: 300, value: g.note || '', placeholder: 'Talla, color, modelo…' }), 'span-2'),
-      field('Cuánto lo quieres', prio),
       h('div', { class: 'gift__remove' }, h('button', { class: 'linklike linklike--danger', type: 'button', onclick: () => removeRow(row) }, 'Quitar este regalo'))
     )
   );
@@ -112,7 +104,7 @@ function cleanUrl(value) {
   }
 }
 
-function collect(form, errorBox) {
+function collect(form, errorBox, title) {
   const fail = (text) => {
     errorBox.textContent = text;
     errorBox.hidden = false;
@@ -127,12 +119,12 @@ function collect(form, errorBox) {
     if (!name) continue;
     const url = cleanUrl(get('url'));
     if (url === null) return fail(`El enlace de «${name}» no parece válido.`);
-    items.push({ name, url, price: get('price'), note: get('note'), priority: Number(get('priority')) });
+    items.push({ name, url, price: get('price'), note: get('note'), priority: 2 });
   }
   if (!items.length) return fail('Agrega al menos un regalo con nombre.');
   return {
     p_owner: form.elements.owner.value.trim(),
-    p_title: form.elements.title.value.trim(),
+    p_title: title,
     p_event_date: form.elements.event_date.value || null,
     p_note: form.elements.note.value.trim() || null,
     p_items: items,
@@ -157,7 +149,7 @@ function renderForm({ list = null, token = null, password = null }) {
       novalidate: false,
       onsubmit: async (e) => {
         e.preventDefault();
-        const data = collect(form, errorBox);
+        const data = collect(form, errorBox, editing ? list.title : DEFAULT_TITLE);
         if (!data) return;
         submit.disabled = true;
         try {
@@ -185,7 +177,6 @@ function renderForm({ list = null, token = null, password = null }) {
       'section',
       { class: 'form__block' },
       field('Tu nombre', h('input', { name: 'owner', required: true, maxlength: 60, value: editing ? list.owner_name : '', autocomplete: 'given-name' })),
-      field('Título de la lista', h('input', { name: 'title', required: true, maxlength: 100, value: editing ? list.title : 'Navidad 2026' })),
       field('Fecha del evento (opcional)', h('input', { name: 'event_date', type: 'date', value: editing && list.event_date ? list.event_date : '2026-12-25' })),
       field('Mensaje (opcional)', h('textarea', { name: 'note', rows: 3, maxlength: 500, placeholder: 'Algo que quieras que sepan antes de elegir' }, editing && list.note ? list.note : ''))
     ),

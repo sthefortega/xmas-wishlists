@@ -1,5 +1,5 @@
 import { fetchLists } from './api.js';
-import { h, shortDate, plural, errorMessage } from './ui.js';
+import { h, shortDate, plural, errorMessage, DEFAULT_TITLE } from './ui.js';
 import { mountLayout } from './layout.js';
 
 mountLayout();
@@ -17,7 +17,7 @@ function row(list) {
   return h(
     'a',
     { class: 'row', href: `lista.html?id=${list.id}` },
-    h('span', { class: 'row__main' }, h('span', { class: 'row__name' }, list.owner_name), h('span', { class: 'row__title' }, list.title)),
+    h('span', { class: 'row__main' }, h('span', { class: 'row__name' }, list.owner_name), list.title !== DEFAULT_TITLE ? h('span', { class: 'row__title' }, list.title) : null),
     h('span', { class: 'row__meta' }, meta.join(' · '))
   );
 }

@@ -1,6 +1,6 @@
 import { fetchList, rpc, isUuid } from './api.js';
 import { resolveEditToken, saveToken } from './auth.js';
-import { h, longDate, countdown, errorMessage, copyText, pageUrl, toast } from './ui.js';
+import { h, longDate, countdown, errorMessage, copyText, pageUrl, toast, DEFAULT_TITLE } from './ui.js';
 import { mountLayout } from './layout.js';
 
 mountLayout();
@@ -8,12 +8,6 @@ mountLayout();
 const main = document.getElementById('main');
 const params = new URLSearchParams(location.search);
 const id = params.get('id');
-
-const PRIORITY = {
-  1: { label: 'Me haría mucha ilusión', strong: true },
-  2: { label: 'Me gustaría', strong: false },
-  3: { label: 'Si se puede', strong: false },
-};
 
 const back = () => h('a', { class: 'back', href: 'index.html' }, '← Todas las listas');
 
@@ -28,7 +22,6 @@ function notFound() {
 }
 
 function gift(item) {
-  const p = PRIORITY[item.priority] || PRIORITY[2];
   let link = null;
   if (item.url) {
     link = h('a', { class: 'gift__link', href: item.url, target: '_blank', rel: 'noopener noreferrer nofollow' }, 'Ver enlace');
@@ -42,7 +35,7 @@ function gift(item) {
       { class: 'gift__body' },
       h('p', { class: 'gift__name' }, item.name),
       item.note ? h('p', { class: 'gift__note' }, item.note) : null,
-      h('p', { class: 'gift__tags' }, h('span', { class: p.strong ? 'prio prio--high' : 'prio' }, p.label), link ? ' · ' : null, link)
+      link ? h('p', { class: 'gift__tags' }, link) : null
     ),
     item.price ? h('span', { class: 'gift__price' }, item.price) : null
   );
@@ -82,7 +75,7 @@ function render(list, token) {
   main.replaceChildren(
     ...[
       back(),
-      h('header', { class: 'list-head' }, h('h1', {}, list.owner_name), h('p', { class: 'list-head__title' }, list.title), when ? h('p', { class: 'muted' }, when) : null),
+      h('header', { class: 'list-head' }, h('h1', {}, list.owner_name), list.title !== DEFAULT_TITLE ? h('p', { class: 'list-head__title' }, list.title) : null, when ? h('p', { class: 'muted' }, when) : null),
       list.note ? h('blockquote', { class: 'note' }, list.note) : null,
       h('div', { class: 'actions' }, actions),
       h('ol', { class: 'gifts' }, (list.items || []).map(gift)),

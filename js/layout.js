@@ -1,8 +1,10 @@
 import { h, errorText } from './ui.js';
 import { rpc } from './api.js';
 import { getAdmin, setAdmin, clearAdmin } from './auth.js';
+import { initSnow } from './snow.js';
 
 export function mountLayout() {
+  initSnow();
   const header = document.getElementById('site-header');
   header.className = 'site-header';
   header.append(
