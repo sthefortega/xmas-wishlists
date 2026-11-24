@@ -499,6 +499,30 @@ textarea::placeholder {
 .gift__fields .span-2 {
   grid-column: span 2;
 }
+.gift__search {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  margin: -0.25rem 0 1.25rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.store-link {
+  padding: 0.35rem 0.75rem;
+  border: 1.5px solid var(--green);
+  border-radius: 3px;
+  color: var(--green);
+  font-weight: 600;
+  text-decoration: none;
+}
+.store-link:hover {
+  background: var(--paper-2);
+}
+.store-link[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
 .gift__remove {
   grid-column: span 2;
   font-size: 0.88rem;

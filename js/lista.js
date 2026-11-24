@@ -1,6 +1,6 @@
 import { fetchList, rpc, isUuid } from './api.js';
 import { resolveEditToken, saveToken } from './auth.js';
-import { h, longDate, countdown, errorMessage, copyText, pageUrl, toast, DEFAULT_TITLE } from './ui.js';
+import { h, longDate, countdown, errorMessage, copyText, pageUrl, toast, DEFAULT_TITLE, storeOf } from './ui.js';
 import { mountLayout } from './layout.js';
 
 mountLayout();
@@ -23,8 +23,9 @@ function notFound() {
 
 function gift(item) {
   let link = null;
+  const store = storeOf(item.url);
   if (item.url) {
-    link = h('a', { class: 'gift__link', href: item.url, target: '_blank', rel: 'noopener noreferrer nofollow' }, 'Ver enlace');
+    link = h('a', { class: 'gift__link', href: item.url, target: '_blank', rel: 'noopener noreferrer nofollow' }, store ? `Ver en ${store}` : 'Ver enlace');
   }
   return h(
     'li',

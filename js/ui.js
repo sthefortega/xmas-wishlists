@@ -77,4 +77,23 @@ export async function copyText(text, done = 'Enlace copiado') {
   toast(done);
 }
 
+// Tienda de un enlace: 'Amazon', 'Mercado Libre' o null.
+export function storeOf(value) {
+  let v = String(value || '').trim();
+  if (!v) return null;
+  if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+  let host;
+  try {
+    host = new URL(v).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+  if (/(^|\.)amazon\.[a-z.]+$/.test(host) || ['amzn.to', 'amzn.com', 'a.co'].includes(host)) return 'Amazon';
+  if (/(^|\.)mercadoli(b|v)re\./.test(host) || host === 'meli.la') return 'Mercado Libre';
+  return null;
+}
+
+export const amazonSearchUrl = (q) => `https://www.amazon.com.mx/s?k=${encodeURIComponent(q)}`;
+export const mercadoLibreSearchUrl = (q) => `https://www.mercadolibre.com.mx/jm/search?as_word=${encodeURIComponent(q)}`;
+
 export const pageUrl = (page, query = '') => new URL(`${page}${query}`, location.href).href;

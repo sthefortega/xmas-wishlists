@@ -1,6 +1,6 @@
 import { fetchList, rpc, isUuid } from './api.js';
 import { saveToken, resolveEditToken, getCreatePw, setCreatePw, clearCreatePw } from './auth.js';
-import { h, errorMessage, errorText, copyText, pageUrl, toast, DEFAULT_TITLE } from './ui.js';
+import { h, errorMessage, errorText, copyText, pageUrl, toast, DEFAULT_TITLE, storeOf, amazonSearchUrl, mercadoLibreSearchUrl } from './ui.js';
 import { mountLayout } from './layout.js';
 
 mountLayout();
@@ -66,6 +66,44 @@ function renderGate() {
 // --- Paso 2: formulario ----------------------------------------------------
 
 function giftRow(g = {}) {
+  const nameInput = h('input', { name: 'name', maxlength: 120, value: g.name || '', placeholder: 'Qué te gustaría recibir' });
+  const urlInput = h('input', { name: 'url', value: g.url || '', placeholder: 'Pega aquí el enlace del producto', inputmode: 'url', autocapitalize: 'off' });
+  const urlHint = h('p', { class: 'hint' });
+
+  const stores = [
+    [h('a', { class: 'store-link', target: '_blank', rel: 'noopener noreferrer', href: '#' }, 'Amazon México'), amazonSearchUrl],
+    [h('a', { class: 'store-link', target: '_blank', rel: 'noopener noreferrer', href: '#' }, 'Mercado Libre'), mercadoLibreSearchUrl],
+  ];
+
+  const sync = () => {
+    const q = nameInput.value.trim();
+    for (const [a, build] of stores) {
+      if (q) {
+        a.href = build(q);
+        a.removeAttribute('aria-disabled');
+      } else {
+        a.href = '#';
+        a.setAttribute('aria-disabled', 'true');
+      }
+    }
+    const store = storeOf(urlInput.value);
+    urlHint.textContent = urlInput.value.trim() ? (store ? `Enlace de ${store}` : '') : 'Busca el producto en una tienda, copia su enlace y pégalo aquí.';
+  };
+  for (const [a] of stores) {
+    a.addEventListener('click', (e) => {
+      if (a.getAttribute('aria-disabled') === 'true') {
+        e.preventDefault();
+        toast('Escribe primero el nombre del regalo');
+      }
+    });
+  }
+  nameInput.addEventListener('input', sync);
+  urlInput.addEventListener('input', sync);
+  sync();
+
+  const urlField = field('Enlace (opcional)', urlInput, 'span-2');
+  urlField.append(urlHint);
+
   const row = h(
     'div',
     { class: 'gift gift--edit' },
@@ -73,10 +111,11 @@ function giftRow(g = {}) {
     h(
       'div',
       { class: 'gift__fields' },
-      field('Regalo', h('input', { name: 'name', maxlength: 120, value: g.name || '', placeholder: 'Qué te gustaría recibir' }), 'span-2'),
-      field('Enlace (opcional)', h('input', { name: 'url', maxlength: 500, value: g.url || '', placeholder: 'tienda.com/producto', inputmode: 'url', autocapitalize: 'off' })),
+      field('Regalo', nameInput, 'span-2'),
+      h('div', { class: 'gift__search span-2' }, h('span', {}, 'Buscar en:'), stores.map(([a]) => a)),
+      urlField,
       field('Precio aproximado (opcional)', h('input', { name: 'price', maxlength: 30, value: g.price || '', placeholder: '$500' })),
-      field('Nota (opcional)', h('input', { name: 'note', maxlength: 300, value: g.note || '', placeholder: 'Talla, color, modelo…' }), 'span-2'),
+      field('Nota (opcional)', h('input', { name: 'note', maxlength: 300, value: g.note || '', placeholder: 'Talla, color, modelo…' })),
       h('div', { class: 'gift__remove' }, h('button', { class: 'linklike linklike--danger', type: 'button', onclick: () => removeRow(row) }, 'Quitar este regalo'))
     )
   );
@@ -98,7 +137,18 @@ function cleanUrl(value) {
   if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
   try {
     const u = new URL(v);
-    return u.hostname.includes('.') ? u.href : null;
+    if (!u.hostname.includes('.')) return null;
+    const store = storeOf(u.href);
+    if (store === 'Amazon') {
+      // Los enlaces de Amazon traen mucho rastreo: se deja solo el producto.
+      const m = u.pathname.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i);
+      if (m) return `${u.origin}/dp/${m[1]}`;
+    }
+    if (store === 'Mercado Libre') {
+      u.hash = '';
+      u.search = '';
+    }
+    return u.href;
   } catch {
     return null;
   }
@@ -119,6 +169,7 @@ function collect(form, errorBox, title) {
     if (!name) continue;
     const url = cleanUrl(get('url'));
     if (url === null) return fail(`El enlace de «${name}» no parece válido.`);
+    if (url.length > 500) return fail(`El enlace de «${name}» es demasiado largo. Copia el enlace del producto sin parámetros extra.`);
     items.push({ name, url, price: get('price'), note: get('note'), priority: 2 });
   }
   if (!items.length) return fail('Agrega al menos un regalo con nombre.');
