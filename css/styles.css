@@ -39,7 +39,7 @@ body::after {
   pointer-events: none;
 }
 body::before {
-  background: url("../img/fondo.jpg") center 60% / cover no-repeat;
+  background: url("../img/fondo.jpg") center / cover no-repeat;
 }
 body::after {
   background: rgb(var(--veil) / var(--veil-strength));
