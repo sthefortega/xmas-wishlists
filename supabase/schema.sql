@@ -62,6 +62,8 @@ alter table public.items        enable row level security;
 
 revoke all on public.settings, public.attempts, public.list_secrets from anon, authenticated;
 revoke insert, update, delete, truncate on public.lists, public.items from anon, authenticated;
+-- Los proyectos nuevos de Supabase ya no dan acceso automático a las tablas: se concede solo lectura.
+grant select on public.lists, public.items to anon, authenticated;
 
 drop policy if exists "lectura publica" on public.lists;
 create policy "lectura publica" on public.lists for select to anon, authenticated using (true);

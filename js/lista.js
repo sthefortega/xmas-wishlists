@@ -80,11 +80,13 @@ function render(list, token) {
   }
 
   main.replaceChildren(
-    back(),
-    h('header', { class: 'list-head' }, h('h1', {}, list.owner_name), h('p', { class: 'list-head__title' }, list.title), when ? h('p', { class: 'muted' }, when) : null),
-    list.note ? h('blockquote', { class: 'note' }, list.note) : null,
-    h('div', { class: 'actions' }, actions),
-    h('ol', { class: 'gifts' }, (list.items || []).map(gift))
+    ...[
+      back(),
+      h('header', { class: 'list-head' }, h('h1', {}, list.owner_name), h('p', { class: 'list-head__title' }, list.title), when ? h('p', { class: 'muted' }, when) : null),
+      list.note ? h('blockquote', { class: 'note' }, list.note) : null,
+      h('div', { class: 'actions' }, actions),
+      h('ol', { class: 'gifts' }, (list.items || []).map(gift)),
+    ].filter(Boolean)
   );
 }
 
