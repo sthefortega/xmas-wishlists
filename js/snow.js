@@ -1,10 +1,9 @@
-// Nieve que cae desde el puntero al moverlo. Solo en pantallas con ratón y
-// si la persona no pidió reducir el movimiento.
+// Nieve que cae desde el puntero. Con ratón, un rastro al moverlo; en pantallas
+// táctiles, un puñado de copos en cada toque. No se activa si la persona pidió
+// reducir el movimiento.
 
 export function initSnow() {
-  const fine = matchMedia('(hover: hover) and (pointer: fine)').matches;
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (!fine || reduce) return;
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
 
   const canvas = document.createElement('canvas');
   canvas.className = 'snow';
@@ -33,34 +32,47 @@ export function initSnow() {
   let spawnY = -999;
   let prevX = 0;
 
+  function spawn(x, y, count, spreadX, spreadY, speedX, drift) {
+    for (let i = 0; i < count; i++) {
+      flakes.push({
+        x: x + rand(-spreadX, spreadX),
+        y: y + rand(-spreadY, spreadY),
+        r: rand(1.6, 3.8),
+        vx: rand(-speedX, speedX) + drift,
+        vy: rand(0.3, 1),
+        sway: rand(0, 6.28),
+        life: 1,
+      });
+    }
+    if (flakes.length > 240) flakes.splice(0, flakes.length - 240);
+    if (!running) {
+      running = true;
+      last = performance.now();
+      requestAnimationFrame(tick);
+    }
+  }
+
   window.addEventListener(
     'pointermove',
     (e) => {
-      if (e.pointerType && e.pointerType !== 'mouse') return;
+      if (e.pointerType !== 'mouse') return;
       const moved = Math.hypot(e.clientX - spawnX, e.clientY - spawnY);
       if (moved < 14) return;
       const drift = (e.clientX - prevX) * 0.015;
       prevX = e.clientX;
       spawnX = e.clientX;
       spawnY = e.clientY;
-      const n = moved > 60 ? 3 : 2;
-      for (let i = 0; i < n; i++) {
-        flakes.push({
-          x: e.clientX + rand(-8, 8),
-          y: e.clientY + rand(-6, 10),
-          r: rand(1.6, 3.8),
-          vx: rand(-0.25, 0.25) + drift,
-          vy: rand(0.35, 1),
-          sway: rand(0, 6.28),
-          life: 1,
-        });
-      }
-      if (flakes.length > 240) flakes.splice(0, flakes.length - 240);
-      if (!running) {
-        running = true;
-        last = performance.now();
-        requestAnimationFrame(tick);
-      }
+      spawn(e.clientX, e.clientY, moved > 60 ? 3 : 2, 8, 8, 0.25, drift);
+    },
+    { passive: true }
+  );
+
+  // Toque en pantalla táctil: un puñado de copos que se abre y cae.
+  window.addEventListener(
+    'pointerdown',
+    (e) => {
+      if (e.pointerType === 'mouse') return;
+      spawn(e.clientX, e.clientY, 14, 10, 8, 0.9, 0);
     },
     { passive: true }
   );

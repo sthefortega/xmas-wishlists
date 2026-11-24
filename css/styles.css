@@ -146,7 +146,7 @@ h1 {
   transform: rotate(2.5deg);
 }
 
-/* Nieve del puntero (solo escritorio) ------------------------------------ */
+/* Nieve del puntero (rastro con ratón, puñado al tocar) ------------------ */
 
 .snow {
   position: fixed;
